@@ -1,0 +1,34 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.18, pytest-9.1.1, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/claude/pawpal-rag
+plugins: platformdirs-4.13.5, anyio-4.15.1
+collecting ... collected 25 items
+
+tests/test_rag.py::test_every_chunk_has_a_tip_and_a_source PASSED        [  4%]
+tests/test_rag.py::test_structured_lines_are_parsed_not_indexed_as_prose PASSED [  8%]
+tests/test_rag.py::test_senior_dog_walk_query_finds_walk_guidance PASSED [ 12%]
+tests/test_rag.py::test_species_filter_keeps_dog_advice_away_from_cats PASSED [ 16%]
+tests/test_rag.py::test_life_stage_filter_excludes_puppy_advice_for_senior_dogs PASSED [ 20%]
+tests/test_rag.py::test_other_pets_never_get_chesters_profile PASSED     [ 24%]
+tests/test_rag.py::test_empty_query_returns_nothing PASSED               [ 28%]
+tests/test_rag.py::test_scores_are_between_zero_and_one_and_sorted PASSED [ 32%]
+tests/test_rag.py::test_walk_for_chester_cites_his_profile_and_warns_when_too_long PASSED [ 36%]
+tests/test_rag.py::test_short_walk_has_no_warning PASSED                 [ 40%]
+tests/test_rag.py::test_unknown_species_falls_back_instead_of_guessing PASSED [ 44%]
+tests/test_rag.py::test_urgent_wording_tells_owner_to_call_a_vet PASSED  [ 48%]
+tests/test_rag.py::test_medication_always_carries_the_vet_reminder_even_on_fallback PASSED [ 52%]
+tests/test_rag.py::test_retrieval_failure_degrades_to_fallback_not_a_crash PASSED [ 56%]
+tests/test_rag.py::test_missing_knowledge_folder_does_not_crash PASSED   [ 60%]
+tests/test_rag.py::test_life_stage_boundaries PASSED                     [ 64%]
+tests/test_rag.py::test_suggests_teeth_brushing_when_missing_and_skips_it_when_present PASSED [ 68%]
+tests/test_rag.py::test_other_coat_brushing_does_not_hide_the_teeth_suggestion PASSED [ 72%]
+tests/test_rag.py::test_hamster_gets_no_cat_or_dog_suggestions PASSED    [ 76%]
+tests/test_rag.py::test_plan_without_advisor_is_unchanged PASSED         [ 80%]
+tests/test_rag.py::test_plan_with_advisor_changes_reason_and_adds_citations PASSED [ 84%]
+tests/test_rag.py::test_accepting_a_suggestion_adds_a_conflict_free_task PASSED [ 88%]
+tests/test_rag.py::test_retrievals_are_logged_to_file PASSED             [ 92%]
+tests/test_rag.py::test_plan_rows_show_sources_and_confidence_only_when_rag_is_on PASSED [ 96%]
+tests/test_rag.py::test_plan_rows_say_so_when_nothing_reliable_was_found PASSED [100%]
+
+============================== 25 passed in 0.86s ==============================

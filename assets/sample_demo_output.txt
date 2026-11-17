@@ -1,0 +1,97 @@
+======================================================================
+BASELINE (no retrieval): reasons come only from priority and time
+======================================================================
+Daily plan for Tuesday, Nov 17, 2026 (90 min scheduled)
+  08:00-08:10  Chester: Breakfast  [HIGH]
+      why: Must-do task, always included; matches the morning preference; repeats daily
+  08:15-08:20  Chester: Morning pill  [HIGH]
+      why: Must-do task, always included; matches the morning preference; repeats daily
+  09:00-09:40  Chester: Long walk around the park  [MEDIUM]
+      why: Medium priority and fits your available time; matches the morning preference; repeats daily
+  18:00-18:10  Chester: Brush coat  [LOW]
+      why: Low priority and fits your available time; repeats weekly
+  18:30-18:35  Luna: Dinner  [HIGH]
+      why: Must-do task, always included; matches the evening preference; repeats daily
+  19:00-19:10  Luna: Wand toy play  [MEDIUM]
+      why: Medium priority and fits your available time
+  20:00-20:10  Nibbles: Refresh bedding  [LOW]
+      why: Low priority and fits your available time
+
+======================================================================
+WITH RAG: reasons and warnings come from retrieved, cited guidance
+======================================================================
+Daily plan for Tuesday, Nov 17, 2026 (90 min scheduled)
+  08:00-08:10  Chester: Breakfast  [HIGH]
+      why: Must-do task, always included; matches the morning preference; repeats daily. Guidance: Plan Chester's day like a small senior dog: gentle, shorter, more frequent activity, steady meals, and regular vet checkups. Give Chester measured meals at consistent times and skip fatty scraps and rich treats to protect his pancreas.
+      sources: chester_profile.md#Who Chester is, chester_profile.md#Chester's feeding, confidence 0.33
+  08:15-08:20  Chester: Morning pill  [HIGH]
+      why: Must-do task, always included; matches the morning preference; repeats daily. Guidance: Ask the vet whether a medication should be given with food. Plan Chester's day like a small senior dog: gentle, shorter, more frequent activity, steady meals, and regular vet checkups. Always follow your vet's directions; PawPal+ never recommends doses.
+      sources: medication_safety.md#Food and pills, chester_profile.md#Who Chester is, confidence 0.33
+  09:00-09:40  Chester: Long walk around the park  [MEDIUM]
+      why: Medium priority and fits your available time; matches the morning preference; repeats daily. Guidance: Keep Chester's walks to about 15-20 minutes, use a harness, and shorten them in heat or cold or if he slows down.
+      warning: 40 min is longer than the 20-min guideline [chester_profile.md#Chester's walks]; consider splitting it into shorter sessions.
+      sources: chester_profile.md#Chester's walks, confidence 0.35
+  18:00-18:10  Chester: Brush coat  [LOW]
+      why: Low priority and fits your available time; repeats weekly. Guidance: Brush coat several times a week to prevent mats.
+      sources: grooming_wiry_and_silky_coats.md#Brushing, confidence 0.33
+  18:30-18:35  Luna: Dinner  [HIGH]
+      why: Must-do task, always included; matches the evening preference; repeats daily. Guidance: Feed cats measured meals on a schedule and call the vet if a cat stops eating.
+      sources: cat_care_basics.md#Cat feeding, confidence 0.27
+  19:00-19:10  Luna: Wand toy play  [MEDIUM]
+      why: Medium priority and fits your available time. Guidance: Give indoor cats a daily play session and scratching options.
+      sources: cat_care_basics.md#Play and enrichment, confidence 0.48
+  20:00-20:10  Nibbles: Refresh bedding  [LOW]
+      why: Low priority and fits your available time. Guidance: No reliable guidance found for this task. Ask your vet.
+Suggested additions (need your approval):
+  Chester: Brush Chester's teeth (5 min) [source: chester_profile.md#Chester's teeth]
+  Chester: Sniff game or puzzle feeder for Chester (10 min) [source: enrichment_senior_dogs.md#Mental stimulation]
+  Chester: Schedule a senior wellness checkup for Chester (45 min) [source: senior_dog_care.md#What counts as senior]
+  Luna: Brush Luna's teeth (5 min) [source: dental_care.md#Brushing teeth]
+  Luna: Scoop Luna's litter box (5 min) [source: cat_care_basics.md#Litter box]
+
+======================================================================
+AFTER APPROVING 5 SUGGESTION(S): added to conflict-free time slots
+======================================================================
+  + Chester: Brush Chester's teeth at 19:10
+  + Chester: Sniff game or puzzle feeder for Chester at 17:00
+  + Chester: Schedule a senior wellness checkup for Chester at 10:00
+  + Luna: Brush Luna's teeth at 19:15
+  + Luna: Scoop Luna's litter box at 19:20
+
+Daily plan for Tuesday, Nov 17, 2026 (150 min scheduled)
+  08:00-08:10  Chester: Breakfast  [HIGH]
+      why: Must-do task, always included; matches the morning preference; repeats daily. Guidance: Plan Chester's day like a small senior dog: gentle, shorter, more frequent activity, steady meals, and regular vet checkups. Give Chester measured meals at consistent times and skip fatty scraps and rich treats to protect his pancreas.
+      sources: chester_profile.md#Who Chester is, chester_profile.md#Chester's feeding, confidence 0.33
+  08:15-08:20  Chester: Morning pill  [HIGH]
+      why: Must-do task, always included; matches the morning preference; repeats daily. Guidance: Ask the vet whether a medication should be given with food. Plan Chester's day like a small senior dog: gentle, shorter, more frequent activity, steady meals, and regular vet checkups. Always follow your vet's directions; PawPal+ never recommends doses.
+      sources: medication_safety.md#Food and pills, chester_profile.md#Who Chester is, confidence 0.33
+  09:00-09:40  Chester: Long walk around the park  [MEDIUM]
+      why: Medium priority and fits your available time; matches the morning preference; repeats daily. Guidance: Keep Chester's walks to about 15-20 minutes, use a harness, and shorten them in heat or cold or if he slows down.
+      warning: 40 min is longer than the 20-min guideline [chester_profile.md#Chester's walks]; consider splitting it into shorter sessions.
+      sources: chester_profile.md#Chester's walks, confidence 0.35
+  10:00-10:45  Chester: Schedule a senior wellness checkup for Chester  [MEDIUM]
+      why: Medium priority and fits your available time. Guidance: Plan Chester's day like a small senior dog: gentle, shorter, more frequent activity, steady meals, and regular vet checkups.
+      sources: chester_profile.md#Who Chester is, confidence 0.38
+  17:00-17:10  Chester: Sniff game or puzzle feeder for Chester  [MEDIUM]
+      why: Medium priority and fits your available time. Guidance: Add a short sniff game or puzzle feeder each day for mental enrichment.
+      sources: enrichment_senior_dogs.md#Mental stimulation, confidence 0.39
+  18:00-18:10  Chester: Brush coat  [LOW]
+      why: Low priority and fits your available time; repeats weekly. Guidance: Brush coat several times a week to prevent mats.
+      sources: grooming_wiry_and_silky_coats.md#Brushing, confidence 0.33
+  18:30-18:35  Luna: Dinner  [HIGH]
+      why: Must-do task, always included; matches the evening preference; repeats daily. Guidance: Feed cats measured meals on a schedule and call the vet if a cat stops eating.
+      sources: cat_care_basics.md#Cat feeding, confidence 0.27
+  19:00-19:10  Luna: Wand toy play  [MEDIUM]
+      why: Medium priority and fits your available time. Guidance: Give indoor cats a daily play session and scratching options.
+      sources: cat_care_basics.md#Play and enrichment, confidence 0.48
+  19:10-19:15  Chester: Brush Chester's teeth  [MEDIUM]
+      why: Medium priority and fits your available time. Guidance: Brush Chester's teeth with dog toothpaste several times a week, and have the vet check his mouth at each visit.
+      sources: chester_profile.md#Chester's teeth, confidence 0.43
+  19:15-19:20  Luna: Brush Luna's teeth  [MEDIUM]
+      why: Medium priority and fits your available time. Guidance: Brush teeth with pet toothpaste, daily if possible.
+      sources: dental_care.md#Brushing teeth, confidence 0.18
+  19:20-19:25  Luna: Scoop Luna's litter box  [MEDIUM]
+      why: Medium priority and fits your available time. Guidance: Scoop the litter box daily and watch for straining.
+      sources: cat_care_basics.md#Litter box, confidence 0.43
+Skipped (not enough available time):
+  Nibbles: Refresh bedding (10 min)

@@ -1,0 +1,20 @@
+$ python rag_ask.py --pet Chester --species dog --age 12 --notes "yorkie schnauzer mix" --task "Long walk" --category walk --minutes 40
+Pet:    Chester (dog, 12 yr, senior)
+Task:   Long walk [walk, 40 min]
+Status: grounded (confidence 0.39)
+Advice: Keep Chester's walks to about 15-20 minutes, use a harness, and shorten them in heat or cold or if he slows down.
+Warning: 40 min is longer than the 20-min guideline [chester_profile.md#Chester's walks]; consider splitting it into shorter sessions.
+Sources: chester_profile.md#Chester's walks
+
+$ python rag_ask.py --pet Nibbles --species hamster --age 1 --task "Refresh bedding" --category grooming
+Pet:    Nibbles (hamster, 1 yr, adult)
+Task:   Refresh bedding [grooming, 15 min]
+Status: fallback (confidence 0.00)
+Advice: No reliable guidance found for this task. Ask your vet.
+
+$ python rag_ask.py --pet Chester --species dog --age 12 --task "Chester had a seizure" --category appointment --minutes 30
+Pet:    Chester (dog, 12 yr, senior)
+Task:   Chester had a seizure [appointment, 30 min]
+Status: urgent (confidence 1.00)
+Advice: This sounds urgent. For emergency signs, contact a vet immediately instead of following a schedule.
+Sources: when_to_call_the_vet.md#Emergency signs

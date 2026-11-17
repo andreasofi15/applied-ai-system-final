@@ -1,0 +1,18 @@
+PawPal+ RAG evaluation  (53 knowledge chunks, threshold 0.15)
+------------------------------------------------------------------------------------------------
+ #  result  conf  case
+------------------------------------------------------------------------------------------------
+ 1  PASS    0.39  Chester 40-min walk is flagged
+ 2  PASS    0.40  Chester 15-min walk is not flagged
+ 3  PASS    0.33  Chester breakfast uses his feeding notes
+ 4  PASS    0.33  Chester pill carries the vet reminder
+ 5  PASS    0.29  Chester tooth brushing uses dental guidance
+ 6  PASS    0.20  Other senior dog gets general senior-walk advice, not Chester's profile
+ 7  PASS    0.36  Puppy feeding uses puppy guidance
+ 8  PASS    0.27  Cat feeding uses cat guidance, not dog
+ 9  PASS    0.00  Hamster has no guidance -> honest fallback
+10  PASS    0.37  Hamster pill: general medication-safety doc applies to any species, reminder kept
+11  PASS    1.00  Emergency wording is escalated
+12  PASS    0.07  Gibberish description does not invent guidance
+------------------------------------------------------------------------------------------------
+12/12 cases passed; average confidence on grounded answers: 0.33
