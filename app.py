@@ -2,16 +2,26 @@ from datetime import date, datetime, time, timedelta
 
 import streamlit as st
 
+from advisor import GuidanceAdvisor
 from pawpal_system import (
     Category, Frequency, Owner, Pet, Priority, Scheduler, SupplyItem, Task,
     TimeBlock, TimePreference,
 )
+from plan_view import plan_rows, plan_warnings
+from retriever import KnowledgeRetriever, configure_logging
 
 st.set_page_config(page_title="PawPal+", page_icon="🐾", layout="wide")
 
 PRIORITY_ICON = {Priority.HIGH: "🔴", Priority.MEDIUM: "🟡", Priority.LOW: "🟢"}
 SPECIES_ICON = {"dog": "🐶", "cat": "🐱"}
 WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+
+@st.cache_resource
+def get_advisor() -> GuidanceAdvisor:
+    """Build the knowledge index once per server run (not on every click)."""
+    configure_logging("logs/pawpal_rag.log")
+    return GuidanceAdvisor(KnowledgeRetriever())
+
 
 # Streamlit reruns this whole script on every click, so the Owner lives in
 # session_state. It is only created the first time the page loads.
@@ -63,6 +73,25 @@ def load_sample():
     finish("Sample data loaded. Explore the tabs!")
 
 
+def load_chester():
+    """Add Chester (12-year-old Yorkie-Schnauzer mix) with a typical day, to try the guidance layer."""
+    if owner.get_pet("Chester") is not None:
+        finish("Chester is already in the app.")
+    today = date.today()
+
+    def at(hour, minute=0):
+        return datetime.combine(today, time(hour, minute))
+
+    owner.add_pet(Pet(name="Chester", species="dog", age=12, notes="yorkie schnauzer mix"))
+    chester = owner.get_pet("Chester")
+    chester.add_task(Task("Breakfast", at(8), 10, Category.FEEDING, Priority.HIGH,
+                          Frequency.DAILY, TimePreference.MORNING, must_do=True))
+    chester.add_task(Task("Long walk around the park", at(9), 40, Category.WALK, Priority.MEDIUM,
+                          Frequency.DAILY, TimePreference.MORNING))
+    chester.add_task(Task("Brush coat", at(18), 10, Category.GROOMING, Priority.LOW, Frequency.WEEKLY))
+    finish("Chester added. Open the Daily plan tab to see guidance with sources.")
+
+
 if "flash" in st.session_state:
     st.toast(st.session_state.pop("flash"))
 
@@ -77,6 +106,8 @@ with st.sidebar:
     st.caption("Want to try it out?")
     if st.button("Load sample data"):
         load_sample()
+    if st.button("Add Chester (guidance demo)"):
+        load_chester()
     with st.expander("Danger zone"):
         confirm_reset = st.checkbox("Yes, delete everything", key="confirm_reset")
         if st.button("Reset all data", disabled=not confirm_reset):
@@ -345,14 +376,18 @@ with tab_care:
 
 # ---------------------------------------------------------------- daily plan
 with tab_plan:
-    p1, p2 = st.columns([3, 1])
+    p1, p2, p3 = st.columns([3, 1, 2])
     plan_day = p1.date_input("Plan for which day?", value=date.today(), key="plan_day")
     show_reasons = p2.toggle("Show reasons", value=True, key="show_reasons")
+    use_rag = p3.toggle("Use pet-care guidance (RAG)", value=True, key="use_rag",
+                        help="Looks up your knowledge/ notes for each task and cites its sources.")
+    # Only the plan uses the advisor; the other tabs keep using the plain scheduler.
+    plan_scheduler = Scheduler(owner, get_advisor() if use_rag else None)
 
     if not owner.get_all_tasks():
         st.info("Add some tasks (or load the sample data from the sidebar) to see a plan.")
     else:
-        plan = scheduler.build_daily_plan(plan_day)
+        plan = plan_scheduler.build_daily_plan(plan_day)
         used, budget = plan.total_minutes(), owner.available_minutes
 
         n1, n2, n3 = st.columns(3)
@@ -366,17 +401,22 @@ with tab_plan:
             st.warning("Some tasks clash. You can fix them on the Dashboard tab.")
 
         if plan.items:
-            rows = []
-            for item in plan.items:
-                row = {"Time": f"{item.task.due_time:%H:%M}-{item.task.end_time():%H:%M}",
-                       "Pet": item.task.pet_name, "Task": item.task.description,
-                       "Priority": item.task.priority.name.title()}
-                if show_reasons:
-                    row["Why"] = item.reason
-                rows.append(row)
-            st.table(rows)
+            st.table(plan_rows(plan, show_reasons=show_reasons, show_sources=use_rag))
+            for line in plan_warnings(plan):
+                st.warning(line)
         else:
             st.info("Nothing is scheduled for that day.")
+
+        if plan.suggestions:
+            st.subheader("💡 Suggested additions")
+            st.caption("From your knowledge notes. Nothing is added unless you approve it.")
+            for n, suggestion in enumerate(plan.suggestions):
+                text_col, button_col = st.columns([5, 2])
+                text_col.info(f"{suggestion.pet_name}: {suggestion.description} ({suggestion.minutes} min)"
+                              f"  \n_source: {suggestion.source}_")
+                if button_col.button("Add to plan", key=f"suggest_{n}_{suggestion.pet_name}_{suggestion.key}"):
+                    task = plan_scheduler.accept_suggestion(suggestion, plan_day)
+                    finish(f"Added '{task.description}' at {task.due_time:%H:%M}.")
 
         for task in plan.skipped:
             st.warning(f"Skipped (not enough time): {task.pet_name} - {task.description} ({task.duration_minutes} min)")

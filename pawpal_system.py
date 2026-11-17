@@ -10,7 +10,11 @@ import itertools
 from dataclasses import dataclass, field, replace
 from datetime import date, datetime, time, timedelta
 from enum import Enum
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
+
+if TYPE_CHECKING:  # RAG layer (advisor.py / retriever.py); imported lazily to avoid cycles
+    from advisor import GuidanceAdvisor
+    from retriever import Suggestion
 
 # Shared id counters so every Task / SupplyItem gets a unique id automatically.
 _task_ids = itertools.count(1)
@@ -293,6 +297,9 @@ class ScheduledItem:
     """A task placed in the plan, plus the reason it was placed there."""
     task: Task
     reason: str
+    citations: list[str] = field(default_factory=list)   # RAG: knowledge-base sources used
+    confidence: Optional[float] = None                    # RAG: retrieval score of the best match
+    warnings: list[str] = field(default_factory=list)     # RAG: e.g. walk longer than the guideline
 
 
 @dataclass
@@ -303,6 +310,7 @@ class DailyPlan:
     skipped: list[Task] = field(default_factory=list)
     overdue: list[Task] = field(default_factory=list)
     reminders: list[SupplyItem] = field(default_factory=list)
+    suggestions: list["Suggestion"] = field(default_factory=list)  # RAG: proposed, need owner approval
 
     def total_minutes(self) -> int:
         return sum(item.task.duration_minutes for item in self.items)
@@ -319,6 +327,11 @@ class DailyPlan:
                 f"  [{t.priority.name}]"
             )
             lines.append(f"      why: {item.reason}")
+            for warning in item.warnings:
+                lines.append(f"      warning: {warning}")
+            if item.citations:
+                conf = f", confidence {item.confidence:.2f}" if item.confidence is not None else ""
+                lines.append(f"      sources: {', '.join(item.citations)}{conf}")
         if self.skipped:
             lines.append("Skipped (not enough available time):")
             for t in self.skipped:
@@ -327,6 +340,10 @@ class DailyPlan:
             lines.append("Overdue from earlier days:")
             for t in self.overdue:
                 lines.append(f"  {t.pet_name}: {t.description} (was due {t.due_time:%b %d %H:%M})")
+        if self.suggestions:
+            lines.append("Suggested additions (need your approval):")
+            for s in self.suggestions:
+                lines.append(f"  {s.pet_name}: {s.description} ({s.minutes} min) [source: {s.source}]")
         if self.reminders:
             lines.append("Supply reminders:")
             for s in self.reminders:
@@ -340,8 +357,9 @@ class DailyPlan:
 # ---------------------------------------------------------------------------
 
 class Scheduler:
-    def __init__(self, owner: Owner) -> None:
+    def __init__(self, owner: Owner, advisor: Optional["GuidanceAdvisor"] = None) -> None:
         self.owner = owner
+        self.advisor = advisor      # optional RAG layer; without it the plan works exactly as before
 
     # -- sorting ------------------------------------------------------------
 
@@ -488,14 +506,62 @@ class Scheduler:
             else:
                 skipped.append(task)
 
-        items = [ScheduledItem(t, self._explain(t)) for t in self.sort_by_time(chosen)]
+        items = [self._schedule_item(t) for t in self.sort_by_time(chosen)]
         return DailyPlan(
             day=day,
             items=items,
             skipped=self.sort_by_time(skipped),
             overdue=self.get_overdue_tasks(datetime.combine(day, time.min)),
             reminders=self.get_due_reminders(day),
+            suggestions=self._collect_suggestions(),
         )
+
+    # -- RAG integration ----------------------------------------------------
+
+    def _schedule_item(self, task: Task) -> ScheduledItem:
+        """Base explanation, enriched with cited guidance when an advisor is attached."""
+        reason = self._explain(task)
+        pet = self.owner.get_pet(task.pet_name)
+        if self.advisor is None or pet is None:
+            return ScheduledItem(task, reason)
+        advice = self.advisor.advise_task(pet, task)
+        return ScheduledItem(
+            task,
+            f"{reason}. Guidance: {advice.message}",
+            citations=advice.citations,
+            confidence=advice.confidence if advice.status != "fallback" else None,
+            warnings=advice.warnings,
+        )
+
+    def _collect_suggestions(self) -> list["Suggestion"]:
+        if self.advisor is None:
+            return []
+        found = []
+        for pet in self.owner.pets:
+            found.extend(self.advisor.suggest_tasks(pet, pet.tasks))
+        return found
+
+    _SUGGESTION_DEFAULT_HOUR = {"appointment": 10, "grooming": 19, "enrichment": 17, "walk": 8,
+                                "feeding": 8, "medication": 8}
+
+    def accept_suggestion(self, suggestion: "Suggestion", day: date) -> Task:
+        """Owner approved a suggestion: add it as a real task, moved to a conflict-free slot."""
+        pet = self.owner.get_pet(suggestion.pet_name)
+        if pet is None:
+            raise ValueError(f"No pet named {suggestion.pet_name}")
+        hour = self._SUGGESTION_DEFAULT_HOUR.get(suggestion.category, 12)
+        task = Task(
+            description=suggestion.description,
+            due_time=datetime.combine(day, time(hour, 0)),
+            duration_minutes=suggestion.minutes,
+            category=Category(suggestion.category),
+            priority=Priority.MEDIUM,
+        )
+        pet.add_task(task)
+        free = self.suggest_free_slot(task)
+        if free is not None:
+            task.due_time = free
+        return task
 
     def _explain(self, task: Task) -> str:
         """Build the plain-English reason a task was scheduled."""
