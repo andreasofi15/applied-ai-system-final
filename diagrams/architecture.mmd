@@ -1,12 +1,37 @@
 flowchart LR
-    U[Owner: pets + tasks] --> S[Scheduler]
-    K[(knowledge/ docs)] --> I[Indexer: chunk + TF-IDF]
-    I --> R[Retriever: top-k + score]
-    S -->|pet profile + task query| R
-    R --> G{Score above threshold?}
-    G -- no --> F[Fallback: ask your vet]
-    G -- yes --> P[Plan builder: adjusts tasks, cites sources]
-    P --> H[Human review: accept or edit]
-    H --> O[Saved daily plan + explanation]
-    P --> L[(Logs)]
-    T[Test harness: preset pets] -.checks.-> P
+    subgraph Input
+        O[Owner: pets + tasks<br/>pawpal_system.py]
+    end
+
+    subgraph Knowledge["Knowledge base (offline)"]
+        K[(knowledge/*.md<br/>Chester profile + general dog/cat docs)]
+        X[Indexer: chunk by section<br/>TF-IDF via scikit-learn]
+        K --> X
+    end
+
+    O --> S[Scheduler.build_daily_plan]
+    S -->|per task: pet profile + task words| A[GuidanceAdvisor]
+    A -->|query + species / life-stage / pet filters| R[Retriever: top-k chunks + score]
+    X --> R
+    R --> A
+
+    A --> G1{Emergency wording?}
+    G1 -- yes --> U[Urgent: contact a vet now]
+    G1 -- no --> G2{Top score >= threshold?}
+    G2 -- no --> F[Fallback: ask your vet]
+    G2 -- yes --> P[Cited guidance, duration warnings,<br/>medication reminder]
+
+    U --> D[DailyPlan: reasons + sources + confidence]
+    F --> D
+    P --> D
+    A -->|missing-task proposals| SG[Suggestions]
+    SG --> H{Human review:<br/>owner approves?}
+    H -- yes --> AC[accept_suggestion: conflict-free slot]
+    AC --> S
+    D --> H2[Owner reads plan in CLI / Streamlit]
+
+    A -.-> L[(logs/pawpal_rag.log)]
+    R -.-> L
+
+    T[Tests + eval_harness.py<br/>12 preset cases, pass/fail + confidence] -.checks.-> A
+    T -.checks.-> D
