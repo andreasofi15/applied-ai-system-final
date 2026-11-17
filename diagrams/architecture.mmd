@@ -1,0 +1,12 @@
+flowchart LR
+    U[Owner: pets + tasks] --> S[Scheduler]
+    K[(knowledge/ docs)] --> I[Indexer: chunk + TF-IDF]
+    I --> R[Retriever: top-k + score]
+    S -->|pet profile + task query| R
+    R --> G{Score above threshold?}
+    G -- no --> F[Fallback: ask your vet]
+    G -- yes --> P[Plan builder: adjusts tasks, cites sources]
+    P --> H[Human review: accept or edit]
+    H --> O[Saved daily plan + explanation]
+    P --> L[(Logs)]
+    T[Test harness: preset pets] -.checks.-> P
